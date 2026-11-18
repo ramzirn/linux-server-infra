@@ -231,28 +231,8 @@ The server demonstrated:
 - Successful DNS resolution.
 - Successful HTTP/HTTPS connectivity.
 
-## 10. Initial Assessment Summary
 
-The initial inspection phase established a baseline understanding of the Linux server.
-
-The following areas were examined:
-
-| Area | Assessment |
-|---|---|
-| Operating System | Inspected |
-| Kernel Version | Inspected |
-| CPU Resources | Inspected |
-| Memory Resources | Inspected |
-| Disk & Partitions | Inspected |
-| Network Interfaces | Inspected |
-| Routing & DNS | Inspected |
-| Running Services | Inspected |
-| Listening Ports | Inspected |
-| Network Connectivity | Validated |
-
-Detailed hardware specifications and system configuration values can be recorded separately as the infrastructure documentation evolves.
-
-## 11. Conclusion
+## 10. Conclusion
 
 The initial system inspection is complete.
 
