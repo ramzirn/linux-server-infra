@@ -1,38 +1,57 @@
-# 05 - Security Hardening
+# 05 — Security Hardening
 
-## 1. Overview
+## 1. Objective
 
-This phase focuses on strengthening the security of the Ubuntu server by applying security updates, enabling automatic security maintenance, verifying system security mechanisms, reducing unnecessary services, and protecting remote SSH access.
+The objective of this phase is to strengthen the Ubuntu server's security by applying system updates, enabling automatic security maintenance, verifying security mechanisms, reducing unnecessary services, and protecting remote SSH access.
 
-The objective is to reduce the server's attack surface and establish a secure foundation for future Docker infrastructure.
+The goal is to reduce the server's attack surface and establish a stronger security baseline before deploying additional infrastructure components.
 
-## 2. Security Audit
+Security hardening is an ongoing process. The measures implemented in this phase provide a foundation but do not replace continuous maintenance, monitoring, and security reviews.
 
-An initial security audit was performed to inspect the current system security status.
+## 2. Prerequisites
 
-### Ubuntu Security Status
+Before starting this phase, the following requirements should be met:
 
-Command:
+- An operational Ubuntu Server installation.
+- Administrative access through a user account with sudo privileges.
+- SSH access configured as described in Phase 01.
+- Basic system configuration completed as described in the previous phases.
+- An active network connection.
+
+## 3. Security Audit
+
+An initial security assessment was performed using:
 
 ```bash
 ubuntu-security-status
 ```
 
-Results:
+### Observed Results
+
 - Ubuntu 26.04.1 LTS.
 - Main and Restricted packages receive security maintenance until 2031.
 - Ubuntu Pro is not enabled.
-- Extended Security Maintenance is available through Ubuntu Pro.
+- Extended Security Maintenance (ESM) is available through Ubuntu Pro.
+
+### Key Concepts
+
+- **Ubuntu Security Maintenance:** Security updates provided for supported Ubuntu package repositories during the applicable maintenance period.
+- **Ubuntu Pro:** An optional Ubuntu subscription that provides additional security and maintenance coverage.
+- **ESM (Extended Security Maintenance):** Extended security maintenance available through Ubuntu Pro for eligible packages and components.
 
 Ubuntu Pro is not required for the current laboratory environment.
 
-## 3. System Updates & Security Patches
+The initial assessment confirmed that the system receives standard security maintenance during its applicable support period.
+
+## 4. System Updates & Security Patches
 
 Package repositories were refreshed:
 
 ```bash
 sudo apt update
 ```
+
+This command downloads the latest package information from the configured repositories.
 
 Available package upgrades were inspected:
 
@@ -46,19 +65,28 @@ System packages were upgraded:
 sudo apt upgrade
 ```
 
-A kernel update required a system reboot.
-
-The server was restarted:
+A kernel update required a system reboot:
 
 ```bash
 sudo reboot
 ```
 
-Remote SSH access was successfully restored after reboot.
+Remote SSH access was successfully restored after reboot, confirming that the server remained accessible following the kernel update.
 
-## 4. Automatic Security Updates
+### Key Concepts
 
-### 4.1 Package Verification
+- **APT:** Ubuntu's package management system.
+- **Package Update:** Refreshes the local package metadata.
+- **Package Upgrade:** Installs available newer versions of installed packages.
+- **Kernel Update:** Installs a newer Linux kernel version containing improvements, fixes, or security patches.
+
+Regular system updates are essential for reducing exposure to known software vulnerabilities.
+
+## 5. Automatic Security Updates
+
+Automatic security maintenance was inspected to determine whether the system was configured to install eligible package updates without manual intervention.
+
+### 5.1 Package Verification
 
 The `unattended-upgrades` package was already installed.
 
@@ -68,13 +96,13 @@ Verification:
 dpkg -l unattended-upgrades
 ```
 
-### 4.2 Automatic Updates Configuration
+The package provides automatic installation of eligible package upgrades according to the configured APT policies.
+
+### 5.2 Automatic Updates Configuration
 
 Configuration file:
 
-```bash
-/etc/apt/apt.conf.d/20auto-upgrades
-```
+`/etc/apt/apt.conf.d/20auto-upgrades`
 
 Current configuration:
 
@@ -83,19 +111,20 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 ```
 
-This enables:
-- Daily package list updates.
-- Automatic unattended upgrades.
+This configuration enables:
 
-### 4.3 Security Update Origins
+- Daily package-list updates.
+- Daily unattended upgrade processing.
+
+These settings enable the periodic APT maintenance mechanism. They do not, by themselves, define which package origins are eligible for installation.
+
+### 5.3 Security Update Origins
 
 Configuration file:
 
-```bash
-/etc/apt/apt.conf.d/50unattended-upgrades
-```
+`/etc/apt/apt.conf.d/50unattended-upgrades`
 
-Allowed origins include:
+Configured allowed origins include:
 
 ```text
 "${distro_id}:${distro_codename}";
@@ -104,17 +133,21 @@ Allowed origins include:
 "${distro_id}ESM:${distro_codename}-infra-security";
 ```
 
-Security updates are prioritized without explicitly enabling the proposed, backports, or regular updates repositories.
+These origins define which package repositories are eligible for unattended upgrades.
 
-### 4.4 Automatic Upgrade Simulation
+Proposed and backports origins are not explicitly enabled in the listed configuration.
 
-Command:
+The ESM entries are available as configured package origins, but their actual use depends on the availability of the corresponding repositories and Ubuntu Pro entitlement.
+
+### 5.4 Automatic Upgrade Simulation
+
+Automatic upgrades were tested using:
 
 ```bash
 sudo unattended-upgrade --dry-run --debug
 ```
 
-The simulation stopped with the following message:
+The simulation stopped with:
 
 ```text
 System is on battery power, stopping
@@ -122,6 +155,7 @@ upgrade result: False
 ```
 
 Investigation showed:
+
 - `BAT0` status: `Discharging`.
 - `AC` online status: `0`.
 
@@ -129,48 +163,55 @@ This behavior is related to power detection in the VirtualBox laptop environment
 
 No configuration changes were made to bypass this restriction.
 
-**Note:** Automatic upgrade settings are enabled, but the simulation could not be completed because of the detected power state.
+**Important:** Automatic update settings are enabled, but the simulation could not be completed because of the detected power state. Successful automatic upgrade execution has therefore not been confirmed through this test.
 
 Automatic reboot was not explicitly enabled.
 
-## 5. AppArmor
+## 6. AppArmor
 
-AppArmor provides Mandatory Access Control (MAC), restricting the capabilities of applications according to security profiles.
+AppArmor provides Mandatory Access Control (MAC), restricting application capabilities according to security profiles.
 
-### 5.1 Service Verification
+Unlike traditional discretionary permissions, AppArmor applies additional security policies to processes based on their assigned profiles.
 
-Command:
+### 6.1 Service Verification
+
+Service status was checked using:
 
 ```bash
 sudo systemctl status apparmor
 ```
 
-Result: The AppArmor service is active.
+**Result:** The AppArmor service is active.
 
-### 5.2 Profile Verification
+### 6.2 Profile Verification
 
-Command:
+Loaded profiles and enforcement modes were inspected using:
 
 ```bash
 sudo aa-status
 ```
 
-Observed results:
+### Observed Results
+
 - 186 profiles loaded.
 - 110 profiles in enforce mode.
 - 2 profiles in complain mode.
 - 74 profiles in unconfined mode.
 - 3 processes running with enforced profiles.
 
-AppArmor is operational and enforcing security policies.
+### Understanding AppArmor Modes
 
-Docker-specific AppArmor profiles were not present because Docker has not yet been installed.
+- **Enforce:** The profile is actively enforced. Operations that violate its policy are denied.
+- **Complain:** Policy violations are logged, but not blocked by the profile.
+- **Unconfined:** The process is not restricted by an enforcing AppArmor profile.
 
-## 6. Services & Attack Surface Reduction
+AppArmor is operational and enforcing security policies for processes covered by enforced profiles.
 
-Enabled services and currently running services were inspected.
+Docker-specific AppArmor profiles were not present because Docker had not yet been installed.
 
-Commands:
+## 7. Services & Attack Surface Reduction
+
+Enabled and currently running services were inspected using:
 
 ```bash
 systemctl list-unit-files --type=service --state=enabled
@@ -180,25 +221,36 @@ systemctl list-unit-files --type=service --state=enabled
 systemctl --type=service --state=running
 ```
 
+These commands provide different information:
+
+- The first lists service unit files configured to start automatically.
+- The second lists services currently running.
+
 The `ModemManager` service was identified as unnecessary for this server environment.
 
-### 6.1 ModemManager
+### 7.1 ModemManager
 
 ModemManager manages mobile broadband devices and cellular modems.
 
-Since the VM does not require mobile modem connectivity, the service was disabled and stopped.
-
-Command:
+Since the virtual machine does not require mobile modem connectivity, the service was disabled and stopped:
 
 ```bash
 sudo systemctl disable --now ModemManager.service
 ```
 
+The `disable` option prevents the service from starting automatically, while `--now` stops it immediately.
+
 Other services, including `multipathd`, were inspected but left unchanged to avoid unnecessary modifications to system components.
 
-## 7. SSH & Brute-force Protection
+Reducing unnecessary services helps limit the number of components that could potentially introduce security vulnerabilities or expose network interfaces.
 
-### 7.1 Fail2ban Installation
+## 8. SSH & Brute-force Protection
+
+SSH provides remote administration and is therefore an important security component.
+
+The SSH authentication configuration established during Phase 01 was complemented with Fail2ban to provide additional protection against repeated authentication failures.
+
+### 8.1 Fail2ban Installation
 
 Fail2ban was not initially installed.
 
@@ -214,17 +266,17 @@ Service verification:
 sudo systemctl status fail2ban
 ```
 
-Result: The service is active.
+**Result:** The Fail2ban service is active.
 
-### 7.2 SSH Jail Verification
+### 8.2 SSH Jail Verification
 
-Fail2ban status:
+The active Fail2ban jails were inspected using:
 
 ```bash
 sudo fail2ban-client status
 ```
 
-Observed result:
+**Observed Result:**
 
 ```text
 Status
@@ -234,15 +286,17 @@ Status
 
 The SSH jail is active.
 
-Detailed status:
+Detailed jail status:
 
 ```bash
 sudo fail2ban-client status sshd
 ```
 
-### 7.3 SSH Protection Parameters
+The SSH jail monitors authentication failures associated with the SSH service.
 
-The effective configuration was inspected using:
+### 8.3 SSH Protection Parameters
+
+The effective SSH jail parameters were inspected using:
 
 ```bash
 sudo fail2ban-client get sshd maxretry
@@ -250,27 +304,31 @@ sudo fail2ban-client get sshd bantime
 sudo fail2ban-client get sshd findtime
 ```
 
-Observed configuration:
+**Observed Configuration:**
 
 | Parameter | Value | Description |
 |---|---|---|
-| maxretry | 5 | Maximum failed attempts |
-| bantime | 600 seconds | Ban duration (10 minutes) |
-| findtime | 600 seconds | Monitoring window (10 minutes) |
+| `maxretry` | 5 | Maximum failed attempts within the monitoring window |
+| `bantime` | 600 seconds | Ban duration (10 minutes) |
+| `findtime` | 600 seconds | Monitoring window (10 minutes) |
 
 Fail2ban monitors SSH authentication failures and temporarily bans IP addresses that exceed the configured retry limit.
 
-## 8. Final Security Verification
+These settings provide an additional layer of protection against repeated SSH authentication attempts.
 
-### 8.1 UFW Firewall
+**Note:** An active SSH jail confirms that Fail2ban is monitoring the service. It does not necessarily mean that any IP addresses have been banned.
 
-Command:
+## 9. Final Security Verification
+
+### 9.1 UFW Firewall
+
+Firewall status was verified using:
 
 ```bash
 sudo ufw status verbose
 ```
 
-Verified configuration:
+**Verified Configuration:**
 
 ```text
 Status: active
@@ -281,36 +339,54 @@ Default: deny (incoming), allow (outgoing), disabled (routed)
 22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)
 ```
 
-The firewall is active and blocks incoming traffic by default, while allowing SSH access.
+The firewall is active and blocks incoming traffic by default while allowing SSH access.
 
-### 8.2 Listening Network Ports
+The firewall configuration is consistent with the SSH access established during the Network & Remote Access phase.
 
-Command:
+### Understanding the Firewall Policy
+
+- **Incoming:** Denies incoming connections by default unless explicitly allowed.
+- **Outgoing:** Allows outgoing connections by default.
+- **Routed:** Forwarded traffic is not allowed by default.
+
+The SSH rule permits incoming TCP connections on port 22 through the guest firewall.
+
+Actual remote accessibility also depends on the VirtualBox NAT port-forwarding configuration and the host firewall.
+
+### 9.2 Listening Network Ports
+
+Listening network sockets were inspected using:
 
 ```bash
 sudo ss -tulpn
 ```
 
-Observed listening ports:
+**Observed Listening Ports:**
 
 | Port | Protocol | Service | Purpose |
 |---|---|---|---|
 | 22 | TCP | SSH | Remote administration |
 | 53 | TCP/UDP | systemd-resolved | Local DNS resolution |
 | 68 | UDP | systemd-networkd | DHCP |
-| 323 | UDP | chronyd | Time synchronization |
+| 323 | UDP | chronyd | Chrony command and monitoring interface |
 
-No unexpected listening services were identified.
+**Important:** UDP 323 is used by Chrony for its command and monitoring interface. It is not the standard NTP service port. NTP normally uses UDP 123.
 
-### 8.3 SSH Configuration Verification
+No unexpected listening services were identified during the inspection.
 
-Command:
+Listening addresses must also be considered when determining whether a service is accessible from external interfaces.
+
+A service bound to `127.0.0.1`, for example, is not directly reachable through the server's external network interfaces.
+
+### 9.3 SSH Configuration Verification
+
+The effective SSH configuration was inspected using:
 
 ```bash
-sudo sshd -T | grep -E 'permitrootlogin|passwordauthentication|pubkeyauthentication|kbdinteractiveauthentication'
+sudo sshd -T | grep -E '^(permitrootlogin|passwordauthentication|pubkeyauthentication|kbdinteractiveauthentication)'
 ```
 
-Verified configuration:
+**Verified Configuration:**
 
 ```text
 permitrootlogin no
@@ -319,20 +395,22 @@ passwordauthentication no
 kbdinteractiveauthentication no
 ```
 
-SSH security settings are correctly applied:
-- Root login is disabled.
-- Public key authentication is enabled.
+The effective SSH security settings confirm that:
+
+- Root SSH login is disabled.
+- Public-key authentication is enabled.
 - Password authentication is disabled.
 - Keyboard-interactive authentication is disabled.
 
-## 9. Final Security Status
+These settings preserve the key-based remote administration model established during the initial network configuration.
 
-The following security measures have been verified:
+## 10. Final Security Status
 
 | Security Component | Status |
 |---|---|
 | System packages updated | Completed |
-| Automatic security updates | Enabled |
+| Automatic security update configuration | Enabled |
+| Automatic upgrade simulation | Interrupted by power-state detection |
 | AppArmor | Active |
 | Unnecessary services | ModemManager disabled |
 | Fail2ban | Active |
@@ -344,14 +422,16 @@ The following security measures have been verified:
 | Root SSH login | Disabled |
 | Listening ports | Inspected |
 
-## 10. Conclusion
+## 11. Result
 
 The Ubuntu server has undergone its initial security hardening process.
 
-The firewall is active, SSH access is restricted to public key authentication, AppArmor is enforcing security policies, and Fail2ban provides additional protection against repeated SSH authentication failures.
+The firewall is active, SSH access is restricted to public-key authentication, AppArmor enforces security policies for protected processes, and Fail2ban provides additional protection against repeated SSH authentication failures.
 
 Unnecessary services have been reviewed, and ModemManager has been disabled.
 
-Automatic security updates are enabled, although their dry-run simulation was interrupted by the VirtualBox power-state detection.
+Automatic security update settings are enabled, although their dry-run simulation was interrupted by VirtualBox power-state detection. Successful unattended upgrade execution was therefore not confirmed during this phase.
 
-The server now has a stronger security baseline and is ready for the next infrastructure configuration phase.
+These measures establish a stronger security baseline before deploying Docker infrastructure and application services.
+
+Security hardening remains an ongoing process and should continue throughout the lifecycle of the server.

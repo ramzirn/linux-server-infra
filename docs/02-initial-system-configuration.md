@@ -1,14 +1,25 @@
-# 02 - Initial System Configuration
+# 02 — Initial System Configuration
 
-## 1. Overview
+## 1. Objective
 
-This phase covers the initial configuration of the Linux server after completing the system inspection.
+The objective of this phase is to establish a properly configured and maintainable Ubuntu Server environment before proceeding with system inspection, user management, security hardening, and infrastructure deployment.
 
-The objective is to establish a clean, properly configured and maintainable server environment before moving on to user management, networking and security hardening.
+This phase introduces essential Linux administration tasks, including hostname configuration, timezone management, package maintenance, administration tools, and automatic security updates.
 
-## 2. Objectives
+## 2. Prerequisites
 
-The main objectives of this phase were:
+Before starting this phase, the following requirements should be met:
+
+- An Ubuntu Server virtual machine installed and accessible.
+- Administrative privileges through a user account with `sudo` access.
+- An active network connection.
+- Basic familiarity with Linux terminal commands.
+
+The server should already have basic network connectivity established, as described in Phase 01.
+
+## 3. Objectives
+
+The main objectives of this phase are:
 
 - Configure a meaningful server hostname.
 - Set the correct system timezone.
@@ -16,7 +27,7 @@ The main objectives of this phase were:
 - Install essential system administration tools.
 - Enable automatic security updates.
 
-## 3. Hostname Configuration
+## 4. Hostname Configuration
 
 The server hostname was configured as:
 
@@ -24,22 +35,26 @@ The server hostname was configured as:
 linux-server
 ```
 
-The hostname identifies the machine across the system and helps administrators recognize it in terminal sessions and network environments.
+A hostname identifies a machine across the operating system and network environment. It also makes the server easier to recognize in terminal sessions and administration tools.
 
-Command used:
+### Configuration
 
 ```bash
 sudo hostnamectl set-hostname linux-server
 ```
 
-Configuration was verified with:
+### Verification
 
 ```bash
 hostnamectl
 hostname
 ```
 
-## 4. Timezone Configuration
+The hostname was confirmed as `linux-server`.
+
+**Note:** Changing the hostname does not automatically configure DNS records or guarantee that the machine can be reached through that name from other devices.
+
+## 5. Timezone Configuration
 
 The server timezone was configured to use the local Algerian timezone:
 
@@ -47,43 +62,67 @@ The server timezone was configured to use the local Algerian timezone:
 Africa/Algiers
 ```
 
-Command used:
+A timezone determines how system timestamps are displayed locally. Correct timezone configuration is useful for interpreting logs, scheduled tasks, and monitoring events.
+
+### Configuration
 
 ```bash
 sudo timedatectl set-timezone Africa/Algiers
 ```
 
-Configuration was verified with:
+### Verification
 
 ```bash
 timedatectl
 ```
 
-Correct timezone configuration is important for system logs, scheduled tasks and monitoring.
+The output can be used to verify the configured timezone and current system clock information.
 
-## 5. System Updates and Package Maintenance
+**Important distinction:** The timezone controls how timestamps are represented locally. It does not independently synchronize the system clock. Time synchronization is handled by separate time synchronization services.
 
-The APT package index was refreshed:
+## 6. System Updates and Package Maintenance
+
+Ubuntu uses APT (Advanced Package Tool) to manage software packages.
+
+APT provides commands to refresh package information, install updates, and remove unnecessary dependencies.
+
+### 6.1 Refresh the package index
+
+The package index was refreshed using:
 
 ```bash
 sudo apt update
 ```
 
-Installed packages were checked for available updates:
+This command downloads the latest package information from the configured repositories.
+
+It does not install or upgrade packages by itself.
+
+### 6.2 Apply available package upgrades
+
+Available package upgrades were checked and applied using:
 
 ```bash
 sudo apt upgrade
 ```
 
-No package upgrades were required at the time of execution. This indicated that the installed packages were already up to date according to the configured repositories.
+No package upgrades were required at the time of execution, indicating that the installed packages were already up to date according to the configured repositories.
 
-Unused dependencies were also checked and cleaned up using:
+### 6.3 Remove unused dependencies
+
+Unused dependencies were checked and removed using:
 
 ```bash
 sudo apt autoremove
 ```
 
-## 6. Essential Administration Tools
+This command identifies automatically installed packages that are no longer required by installed packages.
+
+Review the proposed removals before confirming the operation.
+
+**Important:** Package availability and update results depend on the configured repositories and their current state.
+
+## 7. Essential Administration Tools
 
 The following administration utilities were installed:
 
@@ -91,28 +130,58 @@ The following administration utilities were installed:
 sudo apt install curl wget git vim htop tree net-tools unzip
 ```
 
-Their main purposes are:
+These tools provide basic utilities required for day-to-day server administration and infrastructure management.
 
 | Package | Purpose |
 |---|---|
-| curl | HTTP requests and resource transfers |
-| wget | Downloading files from remote servers |
-| git | Version control and project management |
-| vim | Terminal-based text editing |
-| htop | Interactive process and resource monitoring |
-| tree | Directory structure visualization |
-| net-tools | Traditional network utilities |
-| unzip | Extracting ZIP archives |
+| `curl` | Performing HTTP requests and transferring resources |
+| `wget` | Downloading files from remote servers |
+| `git` | Version control and source code management |
+| `vim` | Terminal-based text editing |
+| `htop` | Interactive process and resource monitoring |
+| `tree` | Visualizing directory structures |
+| `net-tools` | Providing traditional network utilities such as `ifconfig` and `netstat` |
+| `unzip` | Extracting ZIP archives |
 
-## 7. Automatic Security Updates
+### Basic verification
 
-The `unattended-upgrades` package was installed to automate the installation of configured updates, including security updates.
+The installed utilities can be checked using:
 
-Installation:
+```bash
+which curl wget git vim htop tree ifconfig unzip
+```
+
+For example, the following commands demonstrate some of their basic uses:
+
+```bash
+htop
+```
+
+```bash
+tree
+```
+
+```bash
+git --version
+```
+
+These tools will be useful throughout the subsequent infrastructure phases.
+
+## 8. Automatic Security Updates
+
+Keeping the operating system updated is an important part of Linux server maintenance.
+
+Ubuntu provides the `unattended-upgrades` package to automate the installation of updates from configured package origins.
+
+### 8.1 Install unattended-upgrades
+
+The package was installed using:
 
 ```bash
 sudo apt install unattended-upgrades
 ```
+
+### 8.2 Enable automatic updates
 
 Automatic updates were enabled using:
 
@@ -120,46 +189,127 @@ Automatic updates were enabled using:
 sudo dpkg-reconfigure -plow unattended-upgrades
 ```
 
-The configuration was inspected with:
+This command launches the package configuration interface, allowing automatic updates to be enabled.
+
+### 8.3 Inspect the periodic APT configuration
+
+The APT periodic configuration was inspected:
 
 ```bash
 cat /etc/apt/apt.conf.d/20auto-upgrades
 ```
 
-The APT periodic configuration controls package-list refreshes and unattended upgrades.
+The configuration controls periodic package-list refreshes and unattended upgrades.
 
-Automatic updates apply according to the configured package origins and update policies. They do not necessarily install every available type of update.
+A typical enabled configuration contains:
 
-## 8. Validation
+```text
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+```
 
-The following commands were used to validate the system configuration:
+The value `1` enables the corresponding daily periodic operation.
+
+### 8.4 Understand update policies
+
+The package origins eligible for unattended upgrades are controlled separately through:
+
+```bash
+cat /etc/apt/apt.conf.d/50unattended-upgrades
+```
+
+This file defines which repository origins are allowed to provide automatic updates.
+
+Automatic updates are therefore controlled by both:
+
+- `/etc/apt/apt.conf.d/20auto-upgrades`: periodic update scheduling.
+- `/etc/apt/apt.conf.d/50unattended-upgrades`: eligible package origins and update policies.
+
+**Important:** Enabling unattended upgrades does not mean that every available package update will automatically be installed. Actual behavior depends on the configured origins and policies.
+
+## 9. Validation
+
+The following commands were used to validate the system configuration and package state.
+
+### 9.1 Hostname
 
 ```bash
 hostnamectl
+hostname
+```
+
+Expected hostname:
+
+```text
+linux-server
+```
+
+### 9.2 Timezone
+
+```bash
 timedatectl
+```
+
+Expected timezone:
+
+```text
+Africa/Algiers
+```
+
+### 9.3 Package state
+
+```bash
 sudo apt update
 sudo apt upgrade
 apt list --upgradable
 ```
 
-The installed administration utilities and unattended-upgrades configuration were also checked.
+These commands allow administrators to inspect package repository information and determine whether upgrades are available.
 
-## 9. Result
+### 9.4 Administration utilities
+
+The installed tools can be checked with:
+
+```bash
+which curl wget git vim htop tree ifconfig unzip
+```
+
+### 9.5 Automatic update configuration
+
+```bash
+dpkg -l unattended-upgrades
+```
+
+```bash
+cat /etc/apt/apt.conf.d/20auto-upgrades
+```
+
+The configuration of allowed package origins can also be inspected in:
+
+```bash
+cat /etc/apt/apt.conf.d/50unattended-upgrades
+```
+
+## 10. Troubleshooting
+
+| Problem | Possible cause | Suggested check |
+|---|---|---|
+| APT cannot reach repositories | Network or DNS connectivity issue | Check network connectivity and DNS resolution |
+| Package installation fails | Repository configuration or package availability | Run `sudo apt update` and inspect the error |
+| Hostname does not appear as expected | Configuration not applied or incorrect hostname | Run `hostnamectl` |
+| Incorrect displayed local time | Incorrect timezone configuration | Run `timedatectl` |
+| Automatic updates are not running | Incorrect periodic configuration or package origin policy | Inspect `20auto-upgrades` and `50unattended-upgrades` |
+
+## 11. Result
 
 The initial system configuration is complete.
 
 The server now has:
 
-- A clearly defined hostname.
-- The correct local timezone.
-- An updated package state.
-- Essential administration utilities.
-- Automatic security updates enabled.
+- A clearly defined hostname: `linux-server`.
+- The configured local timezone: `Africa/Algiers`.
+- An up-to-date package state at the time of execution.
+- Essential system administration utilities.
+- The `unattended-upgrades` package installed and automatic updates enabled.
 
-These configurations provide a stable starting point for the next stages of server administration.
-
-## 10. Conclusion
-
-This phase established the initial operational configuration of the Linux server.
-
-The next phase will focus on user and access management, including administrative privileges and the principles of least privilege.
+This establishes a stable operational baseline for the subsequent infrastructure configuration phases.

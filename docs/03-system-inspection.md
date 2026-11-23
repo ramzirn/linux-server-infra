@@ -1,19 +1,28 @@
-# 01 - System Inspection & Initial Assessment
+# 03 — System Inspection & Initial Assessment
 
-## 1. Overview
+## 1. Objective
 
-This document describes the initial inspection and assessment of the Linux server before any system configuration or infrastructure deployment.
+The objective of this phase is to inspect and assess the Linux server before proceeding with infrastructure configuration and deployment.
 
-The purpose of this phase is to understand the existing server environment, identify available resources, inspect network connectivity, and establish an initial system baseline.
+This phase establishes an initial system baseline by identifying available resources, understanding the existing environment, inspecting network configuration, and validating connectivity.
 
-This assessment provides the necessary information to prepare the server for the upcoming configuration, security hardening, and application hosting phases.
+System inspection is an important administration task because it helps identify resource constraints, existing services, storage limitations, and potential network conflicts before introducing new workloads.
 
-## 2. Objectives
+## 2. Prerequisites
+
+Before starting this phase, the following requirements should be met:
+
+- An Ubuntu Server virtual machine installed and accessible.
+- Basic system configuration completed as described in Phase 02.
+- An active network connection.
+- A user account with `sudo` privileges for commands requiring administrative access.
+
+## 3. Objectives
 
 The main objectives of this phase are:
 
 - Identify the installed Linux distribution and kernel version.
-- Inspect the available CPU and memory resources.
+- Inspect available CPU and memory resources.
 - Understand the disk and partition layout.
 - Identify network interfaces and IP configuration.
 - Inspect active system services and processes.
@@ -21,7 +30,7 @@ The main objectives of this phase are:
 - Validate network connectivity and DNS resolution.
 - Establish an initial understanding of the server environment.
 
-## 3. Operating System & Kernel Inspection
+## 4. Operating System & Kernel Inspection
 
 ### Commands
 
@@ -33,17 +42,21 @@ hostnamectl
 
 ### Purpose
 
-- `cat /etc/os-release`: Identifies the Linux distribution and its version.
-- `uname -r`: Displays the currently running Linux kernel version.
-- `hostnamectl`: Displays system information, including hostname, operating system, kernel, and hardware architecture.
+| Command | Purpose |
+|---|---|
+| `cat /etc/os-release` | Identifies the Linux distribution and version |
+| `uname -r` | Displays the currently running Linux kernel version |
+| `hostnamectl` | Displays system information, including hostname, operating system, kernel, and hardware architecture |
 
-### Observations
+### Key Concepts
 
-These commands provide an overview of the installed operating system and the current system identity.
+- **Linux Distribution:** The operating system built around the Linux kernel, including system utilities, package management, and other software.
+- **Kernel:** The core component responsible for managing hardware resources, processes, memory, and system operations.
+- **Architecture:** Describes the processor architecture used by the system, such as x86_64.
 
-The information collected will help identify the software environment used throughout the project.
+These commands provide an overview of the installed operating system and system identity, establishing the software environment used throughout the project.
 
-## 4. CPU & Memory Inspection
+## 5. CPU & Memory Inspection
 
 ### Commands
 
@@ -56,20 +69,32 @@ top
 
 ### Purpose
 
-- `lscpu`: Displays CPU architecture, processor model, cores, threads, and virtualization information.
-- `nproc`: Returns the number of available processing units.
-- `free -h`: Displays RAM and swap usage in a human-readable format.
-- `top`: Provides real-time information about running processes and resource consumption.
+| Command | Purpose |
+|---|---|
+| `lscpu` | Displays CPU architecture, processor model, cores, threads, and virtualization information |
+| `nproc` | Returns the number of processing units available to the current process |
+| `free -h` | Displays RAM and swap usage in a human-readable format |
+| `top` | Provides real-time information about running processes and resource consumption |
 
-### Observations
+### Key Concepts
 
-CPU and memory inspection helps evaluate the resources available to the server.
+- **CPU:** The processor responsible for executing instructions.
+- **Core:** An individual processing unit within a CPU.
+- **Thread:** A logical processing unit exposed by the processor.
+- **RAM:** Temporary memory used by the operating system and running applications.
+- **Swap:** Disk space used as an extension of memory when physical RAM is under pressure.
 
-These resources will be important when deploying multiple Docker containers and monitoring services.
+### Interpreting Memory Information
 
-The available memory (`available`) is particularly useful when evaluating how much RAM can be allocated to future workloads.
+The `free -h` command displays several memory values.
 
-## 5. Storage Inspection
+The `available` column is particularly important because it estimates how much memory can be made available for new applications without excessive swapping.
+
+This value is generally more useful than looking only at the `free` column, since Linux uses available memory for filesystem caches.
+
+CPU and memory inspection helps evaluate the resources available to the server before deploying workloads.
+
+## 6. Storage Inspection
 
 ### Commands
 
@@ -82,30 +107,40 @@ sudo du -sh /var /home /opt /tmp
 
 ### Purpose
 
-- `df -h`: Displays filesystem capacity, used space, and available space.
-- `lsblk`: Lists detected block devices, disks, and partitions.
-- `lsblk -f`: Displays filesystem types, UUIDs, and mount points.
-- `du -sh`: Estimates the disk space used by selected directories.
+| Command | Purpose |
+|---|---|
+| `df -h` | Displays filesystem capacity, used space, and available space |
+| `lsblk` | Lists detected block devices, disks, and partitions |
+| `lsblk -f` | Displays filesystem types, UUIDs, and mount points |
+| `du -sh` | Estimates disk space usage for selected directories |
 
 ### Key Concepts
 
-**Block Devices:** Devices that provide block-based storage access, such as disks and partitions.
+- **Block Devices:** Devices providing block-based storage access, such as disks and partitions.
+- **Partitions:** Logical divisions of a storage device.
+- **Filesystems:** Structures used by Linux to organize and store files, such as ext4 and XFS.
+- **Mount Points:** Directories where filesystems are attached and made accessible.
+- **Loop Devices:** Virtual block devices that allow files to be mounted as filesystems. Ubuntu commonly uses them for Snap application images.
 
-**Partitions:** Logical divisions of a storage device.
+### Understanding the Difference Between Storage Commands
 
-**Filesystems:** Structures used by Linux to organize and store files, such as ext4 and XFS.
+`lsblk` provides an overview of the storage device hierarchy, while `df -h` reports filesystem capacity and usage.
 
-**Mount Points:** Directories where filesystems are attached and made accessible.
+The `du -sh` command estimates the amount of disk space occupied by selected directories.
 
-**Loop Devices:** Virtual block devices that allow files to be mounted as filesystems. Ubuntu commonly uses them for Snap application images.
+These commands provide complementary information:
 
-### Observations
+- `lsblk`: What storage devices and partitions exist?
+- `df -h`: How much filesystem space is available?
+- `du -sh`: Which directories occupy disk space?
 
-The storage inspection provides an overview of the virtual disk, its partitions, filesystem types, and available capacity.
+Storage inspection provides an overview of the virtual disk, its partitions, filesystem types, and available capacity.
 
-Understanding the storage layout is important before deploying Docker, which uses disk space to store images, containers, volumes, and logs.
+Understanding the storage layout is essential before deploying Docker, which uses disk space to store images, containers, volumes, and logs.
 
-## 6. Network Inspection
+**Note:** Directory sizes reported by `du` do not necessarily match filesystem usage reported by `df`. Filesystem metadata, reserved space, open deleted files, and mounted filesystems can contribute to differences.
+
+## 7. Network Inspection
 
 ### Commands
 
@@ -117,27 +152,25 @@ resolvectl status
 
 ### Purpose
 
-- `ip -br addr`: Displays network interfaces and their assigned IP addresses in a concise format.
-- `ip route`: Displays the system routing table and default gateway.
-- `resolvectl status`: Displays DNS configuration and resolver information.
+| Command | Purpose |
+|---|---|
+| `ip -br addr` | Displays network interfaces and their assigned IP addresses in a concise format |
+| `ip route` | Displays the system routing table and default gateway |
+| `resolvectl status` | Displays DNS configuration and resolver information |
 
 ### Key Concepts
 
-**Network Interface:** A logical or physical interface used for network communication.
+- **Network Interface:** A logical or physical interface used for network communication.
+- **IP Address:** An address identifying a device on an IP network.
+- **Default Gateway:** The router used to reach destinations outside the local network.
+- **DNS:** A service that translates domain names into IP addresses.
+- **Routing Table:** Information used by the operating system to determine where network packets should be sent.
 
-**IP Address:** An address identifying a device on an IP network.
+These commands help identify how the server communicates with its local network and external destinations.
 
-**Default Gateway:** The router used to reach destinations outside the local network.
+The existing VirtualBox NAT configuration is also taken into account during subsequent network configuration.
 
-**DNS:** A service that translates domain names into IP addresses.
-
-### Observations
-
-The network inspection identifies how the server communicates with its local network and external destinations.
-
-The current VirtualBox networking mode will also be considered during future network configuration.
-
-## 7. System Services & Processes Inspection
+## 8. System Services & Processes Inspection
 
 ### Commands
 
@@ -149,17 +182,24 @@ pstree -p
 
 ### Purpose
 
-- `systemctl`: Lists currently running system services managed by systemd.
-- `ps aux`: Displays running processes and their resource information.
-- `pstree -p`: Displays running processes in a hierarchical tree structure.
+| Command | Purpose |
+|---|---|
+| `systemctl --type=service --state=running` | Lists currently running system services managed by systemd |
+| `ps aux` | Displays running processes and their resource information |
+| `pstree -p` | Displays running processes in a hierarchical tree structure, including process IDs |
 
-### Observations
+### Key Concepts
 
-This inspection helps identify the services and processes currently running on the server.
+- **Service:** A background system component managed by a service manager such as systemd.
+- **Process:** An instance of a running program identified by a process ID (PID).
+- **PID:** A unique process identifier assigned by the Linux kernel.
+- **systemd:** The system and service manager used by Ubuntu.
 
-It also provides an initial understanding of the services that may already occupy system resources or network ports.
+A service and a process are related but are not the same concept. A systemd service may manage one or more processes.
 
-## 8. Listening Ports Inspection
+This inspection identifies the services and processes currently running on the server and helps detect existing resource consumption or services that may occupy network ports.
+
+## 9. Listening Ports Inspection
 
 ### Command
 
@@ -167,80 +207,112 @@ It also provides an initial understanding of the services that may already occup
 sudo ss -tulnp
 ```
 
-### Purpose
+The `ss` utility displays network socket information.
 
-Displays listening TCP and UDP sockets, including associated processes when available.
+This command displays listening TCP and UDP sockets, including associated processes when available.
 
-Options:
+### Command Options
 
-- `-t`: TCP sockets.
-- `-u`: UDP sockets.
-- `-l`: Listening sockets.
-- `-n`: Numeric addresses and ports.
-- `-p`: Associated processes.
+| Option | Meaning |
+|---|---|
+| `-t` | TCP sockets |
+| `-u` | UDP sockets |
+| `-l` | Listening sockets |
+| `-n` | Numeric addresses and ports |
+| `-p` | Associated processes, when available |
 
-### Observations
+### Key Concepts
 
-Identifying listening ports is important for understanding which services are currently exposed or accepting network connections.
+- **Port:** A logical communication endpoint used by network services.
+- **Listening Socket:** A socket waiting for incoming connections or datagrams.
+- **TCP:** A connection-oriented transport protocol.
+- **UDP:** A connectionless transport protocol.
 
-This information will be useful when configuring firewall policies and deploying applications.
+Identifying listening ports helps determine which services are accepting network connections.
 
-## 9. Network Connectivity Validation
+This information is useful when defining firewall policies and deploying applications to avoid port conflicts and unintended network exposure.
 
-### Commands
+**Important:** A listening socket does not automatically mean that a service is accessible from another machine. Actual accessibility also depends on the interface binding, firewall rules, network routing, and virtualization configuration.
+
+## 10. Network Connectivity Validation
+
+Network connectivity was tested using three complementary methods.
+
+### 10.1 IP Connectivity Test
 
 ```bash
 ping -c 4 8.8.8.8
-ping -c 4 google.com
-curl -I https://google.com
 ```
 
-### Purpose
+This test attempts to communicate with a public IP address without requiring DNS resolution.
 
-**IP Connectivity Test**
+It helps determine whether external IP connectivity is available.
 
-```bash
-ping -c 4 8.8.8.8
-```
-
-Tests connectivity to a public IP address without requiring DNS resolution.
-
-**DNS Resolution Test**
+### 10.2 DNS Resolution Test
 
 ```bash
 ping -c 4 google.com
 ```
 
-Tests domain name resolution and attempts to communicate with the resolved IP address.
+This test checks domain name resolution and attempts to communicate with the resolved IP address.
 
-**HTTP/HTTPS Connectivity Test**
+It helps validate both DNS resolution and network connectivity.
+
+### 10.3 HTTP/HTTPS Connectivity Test
 
 ```bash
 curl -I https://google.com
 ```
 
-Tests application-level connectivity by establishing an HTTPS request and displaying HTTP response headers.
+The `curl` utility sends an HTTP request and displays the response headers.
+
+The `-I` option requests response headers without downloading the full response body.
+
+This test checks application-level connectivity over HTTPS.
 
 ### Results
 
-The connectivity tests completed successfully.
-
-The server demonstrated:
+All connectivity tests completed successfully, confirming:
 
 - Successful communication with a public IP address.
 - Successful DNS resolution.
 - Successful HTTP/HTTPS connectivity.
 
+**Note:** Some external services block ICMP traffic. A failed ping does not necessarily mean that network connectivity is unavailable. HTTP/HTTPS tests can provide additional information.
 
-## 10. Conclusion
+## 11. Initial Assessment and Interpretation
+
+The previous inspection commands provide complementary information about the server.
+
+The following points should be considered when evaluating the environment:
+
+| Area | Questions to Consider |
+|---|---|
+| Operating System | Is the expected Ubuntu version installed? |
+| CPU | How many processing units are available? |
+| Memory | Is enough available RAM left for future services? |
+| Storage | Is sufficient disk capacity available for Docker images, containers, and monitoring data? |
+| Network | Are the expected interfaces, IP addresses, and routes configured? |
+| Services | Are there existing services that should be understood before deployment? |
+| Listening Ports | Are any ports already occupied or unexpectedly exposed? |
+| Connectivity | Can the server reach external IP addresses and resolve domain names? |
+
+This assessment provides a baseline for understanding the server's capabilities and limitations before deploying additional infrastructure components.
+
+## 12. Result
 
 The initial system inspection is complete.
 
-The Linux server has been assessed from an operating system, hardware, storage, networking, and service-management perspective.
+The server has been assessed across the following areas:
 
-Network connectivity has also been successfully validated.
+- Operating system and kernel.
+- CPU and memory resources.
+- Disk, partitions, and filesystems.
+- Network interfaces, routing, and DNS configuration.
+- Active system services and processes.
+- Listening network ports.
+- External network and DNS connectivity.
 
-This phase establishes the baseline required before making system-level changes.
+This assessment establishes the initial system baseline required before proceeding with infrastructure configuration and deployment.
 
-The next phase will focus on initial Linux system configuration, including hostname configuration, timezone settings, system updates, and essential administration utilities.
-
+The information collected during this phase can also serve as a reference when evaluating the impact of later infrastructure changes.

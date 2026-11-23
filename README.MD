@@ -1,247 +1,114 @@
-# Linux Server Infrastructure
+# Linux Server Infrastructure — DevOps Learning Lab
+
+A hands-on Linux infrastructure project covering system administration, security hardening, containerization, application hosting, and monitoring.
+
+This repository documents the progressive implementation of a Linux server environment, from initial system configuration to Docker-based application deployment and centralized monitoring.
+
+The project is designed as a practical learning lab for people interested in Linux system administration, infrastructure management, Docker, and DevOps fundamentals.
 
 ## Project Overview
 
-**Linux Server Infrastructure** is a hands-on infrastructure project focused on building, configuring, securing, and maintaining a Linux server in a virtualized environment.
+The infrastructure is built around an Ubuntu Server virtual machine running in Oracle VirtualBox and administered remotely from a Linux Mint host.
 
-The objective is to transform a fresh Linux installation into a stable, secure, maintainable, and production-ready server environment capable of hosting containerized applications and infrastructure services.
+The project follows nine progressive phases, covering:
 
-The server runs as a virtual machine using Oracle VirtualBox.
+- Linux server installation and initial configuration.
+- Network configuration and secure SSH remote access.
+- User, group, and permission management.
+- Linux security hardening.
+- Storage and filesystem management using LVM.
+- Docker infrastructure and container management.
+- Application hosting using Docker and Nginx Reverse Proxy.
+- Infrastructure monitoring and alerting with Prometheus and Grafana.
 
-This project covers the complete server preparation lifecycle, from initial system configuration and Linux administration to network management, security hardening, containerization, monitoring, and automation.
+Each phase introduces practical concepts and builds upon the configuration established in previous phases.
 
-All implementation steps, configurations, technical decisions, and procedures are documented in this repository.
+## Infrastructure Architecture
 
-## Project Objectives
+The project is organized into three main areas:
 
-The main objectives are to:
+**1. Linux System Administration**
+- Ubuntu Server.
+- SSH remote administration.
+- User and permission management.
+- UFW firewall and Fail2ban.
+- AppArmor.
+- LVM storage management.
 
-- Build and configure a Linux server from a fresh installation.
-- Establish a reliable and maintainable server environment.
-- Implement secure remote administration.
-- Understand and manage Linux users, permissions, processes, and services.
-- Configure network connectivity and firewall rules.
-- Apply essential server security hardening practices.
-- Prepare the server to host containerized applications using Docker.
-- Manage application deployments with Docker Compose.
-- Configure a reverse proxy to expose hosted applications.
-- Implement infrastructure monitoring and observability.
-- Automate system administration and maintenance tasks.
-- Establish backup and troubleshooting procedures.
-- Maintain clear and reproducible technical documentation.
+**2. Application Infrastructure**
+- Docker Engine and Docker Compose.
+- Independent Staging and Production application environments.
+- Nginx Reverse Proxy.
+- Docker bridge networking.
+- Containerized services.
 
-## Project Scope & Implementation Roadmap
+**3. Monitoring and Observability**
+- Prometheus for metrics collection and storage.
+- Node Exporter for Linux system metrics.
+- cAdvisor for container metrics.
+- Grafana for visualization.
+- Alertmanager for alert management.
 
-The project is divided into the following implementation phases.
+### High-Level Architecture
 
-### Phase 1 — System Inspection & Initial Assessment
-
-Establish a baseline of the newly installed Linux server.
-
-- Identify the operating system and kernel version.
-- Inspect CPU, RAM, and disk resources.
-- Identify network interfaces and IP configuration.
-- Inspect running processes and system services.
-- Verify internet connectivity.
-- Identify the current system configuration and limitations.
-
-**Expected result:** A documented understanding of the initial server environment.
-
-### Phase 2 — Initial System Configuration
-
-Prepare the operating system for administration and hosting workloads.
-
-- Configure the server hostname.
-- Configure timezone and system time.
-- Update system packages.
-- Install essential administration utilities.
-- Review package management and repositories.
-- Configure automatic security updates where appropriate.
-
-**Expected result:** A clean, updated, and properly configured Linux system.
-
-### Phase 3 — User & Access Management
-
-Establish a controlled server administration environment.
-
-- Create a dedicated administrative user.
-- Configure sudo privileges.
-- Understand Linux users and groups.
-- Configure SSH remote access.
-- Set up SSH key-based authentication.
-- Review file ownership and permissions.
-- Restrict unnecessary administrative access.
-
-**Expected result:** Secure and controlled server administration.
-
-### Phase 4 — Network Configuration
-
-Configure and validate server networking.
-
-- Inspect and understand network interfaces.
-- Configure IP addressing.
-- Understand DNS resolution and default gateways.
-- Verify connectivity between the host and the VM.
-- Test network connectivity and name resolution.
-- Identify required application ports.
-- Configure firewall rules using UFW.
-
-**Expected result:** A reachable server with properly configured network access.
-
-### Phase 5 — Security Hardening
-
-Apply essential Linux server security practices.
-
-- Harden SSH configuration.
-- Disable unnecessary authentication methods.
-- Configure UFW firewall policies.
-- Configure Fail2ban where appropriate.
-- Enable security updates.
-- Review exposed ports and running services.
-- Apply the principle of least privilege.
-- Review basic security and system logs.
-
-**Expected result:** A hardened server with a reduced attack surface.
-
-### Phase 6 — System Services & Storage Management
-
-Prepare the server for application workloads and long-term maintenance.
-
-- Understand systemd and service management.
-- Inspect and manage system services.
-- Understand filesystem structure and disk usage.
-- Organize application and configuration directories.
-- Manage system logs using journalctl.
-- Understand process and resource management.
-- Establish basic maintenance procedures.
-
-**Expected result:** An organized and maintainable server environment.
-
-### Phase 7 — Docker Environment Preparation
-
-Prepare the server to host containerized workloads.
-
-- Install Docker Engine.
-- Install and configure Docker Compose.
-- Understand Docker images and containers.
-- Configure Docker networks.
-- Manage persistent volumes.
-- Understand container lifecycle and logs.
-- Apply basic Docker security practices.
-- Validate Docker functionality.
-
-**Expected result:** A functional Docker environment ready for application deployment.
-
-### Phase 8 — Application Hosting & Reverse Proxy
-
-Deploy and expose applications through the server.
-
-- Deploy multiple containerized applications.
-- Define services using Docker Compose.
-- Configure application-specific networks and volumes.
-- Install and configure Nginx or Traefik.
-- Configure reverse proxy routing.
-- Manage application environment variables.
-- Validate application accessibility.
-- Understand internal and external service communication.
-
-**Expected result:** A server capable of hosting and exposing multiple applications.
-
-### Phase 9 — Monitoring & Observability
-
-Implement visibility into server and application health.
-
-- Install Prometheus.
-- Configure Node Exporter.
-- Install Grafana.
-- Collect server resource metrics.
-- Monitor CPU, RAM, disk, and network usage.
-- Create monitoring dashboards.
-- Explore basic alerting mechanisms.
-
-**Expected result:** A monitored infrastructure with visibility into system health and resource consumption.
-
-### Phase 10 — Automation, Backup & Maintenance
-
-Improve infrastructure consistency and operational efficiency.
-
-- Develop Bash administration scripts.
-- Automate repetitive maintenance tasks.
-- Introduce Ansible for server configuration management.
-- Automate application deployment where appropriate.
-- Define backup procedures.
-- Test backup restoration.
-- Document common troubleshooting procedures.
-
-**Expected result:** A more reproducible, automated, and maintainable server infrastructure.
+```text
+                  LINUX MINT HOST
+                        |
+                    VirtualBox
+                        |
+                  UBUNTU SERVER
+                        |
+          +-------------+-------------+
+          |             |             |
+       SYSTEM       APPLICATION    MONITORING
+    ADMINISTRATION INFRASTRUCTURE INFRASTRUCTURE
+          |             |             |
+       SSH / UFW     Docker        Prometheus
+       Fail2ban      Compose       Node Exporter
+       AppArmor      Nginx         cAdvisor
+       Users         Staging       Grafana
+       Permissions   Production    Alertmanager
+       LVM           Reverse Proxy
+```
 
 ## Technology Stack
 
-| Category | Technology |
+| Technology | Purpose |
 |---|---|
-| Virtualization | Oracle VirtualBox |
-| Operating System | Ubuntu Server |
-| Remote Administration | OpenSSH |
-| Firewall | UFW |
-| Intrusion Prevention | Fail2ban |
-| Containerization | Docker Engine |
-| Container Management | Docker Compose |
-| Reverse Proxy | Nginx / Traefik |
-| Monitoring | Prometheus |
-| Visualization | Grafana |
-| Automation | Bash / Ansible |
-| Version Control | Git / GitHub |
+| Ubuntu Server 26.04.1 LTS | Server operating system |
+| Oracle VirtualBox | Virtualization platform |
+| Linux Mint | Host operating system and administration workstation |
+| OpenSSH | Secure remote administration |
+| UFW | Firewall management |
+| Fail2ban | Protection against repeated authentication attempts |
+| AppArmor | Mandatory access control |
+| LVM | Logical volume and storage management |
+| Docker Engine | Containerization |
+| Docker Compose | Multi-container deployment |
+| Nginx | Web server and reverse proxy |
+| Prometheus | Metrics collection and storage |
+| Node Exporter | Linux system metrics |
+| cAdvisor | Container metrics |
+| Grafana | Monitoring dashboards and visualization |
+| Alertmanager | Alert management |
 
-## Target Infrastructure Architecture
+## Project Documentation
 
-```text
-                  HOST MACHINE
-                       |
-                   VirtualBox
-                       |
-                 UBUNTU SERVER
-                       |
-          +------------+------------+
-          |            |            |
-         SSH          UFW         Storage
-          |            |            |
-          +------------+------------+
-                       |
-                  DOCKER ENGINE
-                       |
-                DOCKER NETWORKS
-                       |
-          +------------+------------+
-          |            |            |
-       App 1         App 2       Monitoring
-          |            |            |
-          +------------+------------+
-                       |
-                 REVERSE PROXY
-                       |
-                APPLICATION ACCESS
-```
+The project is divided into nine phases. Each phase has its own technical documentation in the `docs/` directory.
 
-The architecture will evolve as each implementation phase is completed.
+| Phase | Documentation | Main Topics |
+|---|---|---|
+| 01 | [Network and Remote Access](docs/01-network-and-remote-access.md) | VirtualBox networking, SSH, authentication keys, UFW |
+| 02 | [Initial System Configuration](docs/02-initial-system-configuration.md) | Hostname, timezone, APT, essential tools, automatic updates |
+| 03 | [System Inspection](docs/03-system-inspection.md) | CPU, memory, storage, networking, services, processes |
+| 04 | [User and Access Management](docs/04-user-and-access-management.md) | Users, groups, sudo, ownership, permissions, SGID |
+| 05 | [Security Hardening](docs/05-security-hardening.md) | SSH hardening, UFW, Fail2ban, AppArmor, service inspection |
+| 06 | [System Services and Storage Management](docs/06-system-services-and-storage-management.md) | systemd, filesystems, mount points, LVM, disk capacity |
+| 07 | [Docker Infrastructure](docs/07-docker-infrastructure.md) | Docker Engine, Compose, containers, networks, persistent storage |
+| 08 | [Application Hosting and Reverse Proxy](docs/08-application-hosting-and-reverse-proxy.md) | Staging and Production environments, Docker networking, Nginx reverse proxy |
+| 09 | [Monitoring and Observability](docs/09-monitoring-and-observability.md) | Prometheus, Node Exporter, cAdvisor, Grafana, Alertmanager |
 
-## Expected Deliverables
-
-At the end of the project, the repository should contain:
-
-- A fully configured Linux server.
-- A documented server architecture.
-- Secure remote administration.
-- Network and firewall configuration.
-- A hardened operating system.
-- A functional Docker environment.
-- Multiple deployed containerized applications.
-- A configured reverse proxy.
-- A monitoring and observability stack.
-- Server administration and automation scripts.
-- Ansible configuration and playbooks.
-- Backup and maintenance procedures.
-- Technical documentation and troubleshooting guides.
-- A final technical project report in PDF format.
+For a guided introduction and the recommended learning order, see the [Documentation Guide](docs/README.md).
 
 ## Repository Structure
 
@@ -250,50 +117,100 @@ linux-server-infra/
 │
 ├── README.md
 │
-├── docs/
-│   ├── architecture.md
-│   ├── system-inspection.md
-│   ├── system-configuration.md
-│   ├── user-management.md
-│   ├── network-configuration.md
-│   ├── security-hardening.md
-│   ├── storage-management.md
-│   ├── docker-setup.md
-│   ├── application-deployment.md
-│   ├── monitoring.md
-│   ├── automation.md
-│   └── troubleshooting.md
-│
-├── scripts/
-│   ├── system/
-│   ├── security/
-│   ├── maintenance/
-│   └── backup/
-│
-├── docker/
-│   ├── applications/
-│   └── monitoring/
-│
-├── nginx/
-│
-├── ansible/
-│   ├── inventory/
-│   ├── playbooks/
-│   └── roles/
-│
-└── screenshots/
+└── docs/
+    ├── README.md
+    ├── 01-network-and-remote-access.md
+    ├── 02-initial-system-configuration.md
+    ├── 03-system-inspection.md
+    ├── 04-user-and-access-management.md
+    ├── 05-security-hardening.md
+    ├── 06-system-services-and-storage-management.md
+    ├── 07-docker-infrastructure.md
+    ├── 08-application-hosting-and-reverse-proxy.md
+    └── 09-monitoring-and-observability.md
 ```
 
-## Project Philosophy
+The repository contains the technical documentation. The operational configuration files and deployed services are maintained on the Ubuntu Server in their respective directories.
 
-This project follows a practical, structured, and documentation-driven approach.
+## Environment and Prerequisites
 
-Every implementation phase should be understood, configured, tested, and documented before moving to the next one.
+### Implementation Environment
 
-The goal is not simply to install infrastructure tools, but to understand how a Linux server operates, how its components interact, and how to maintain a reliable environment following professional system administration and DevOps practices.
+The project was implemented using:
 
-**Inspect. Configure. Secure. Deploy. Monitor. Automate. Maintain.**
+| Component | Configuration |
+|---|---|
+| Host OS | Linux Mint |
+| Virtualization | Oracle VirtualBox |
+| Guest OS | Ubuntu Server 26.04.1 LTS |
+| Server hostname | `linux-server` |
+| Container platform | Docker Engine and Docker Compose |
 
+### Requirements for Reproducing the Lab
 
-**Project Status:** In Progress  
-**Repository:** `linux-server-infra`
+To follow the project, you will need:
+
+- A computer capable of running a virtual machine.
+- Oracle VirtualBox or an equivalent virtualization platform.
+- An Ubuntu Server virtual machine.
+- An Internet connection for package installation and container image downloads.
+- Sufficient CPU, memory, and disk space for the virtual machine and deployed services.
+- Basic familiarity with the Linux command line.
+
+Beginners can follow the documentation progressively. Basic networking and Linux command-line knowledge will make the experience easier.
+
+Some operations require administrative privileges through `sudo`.
+
+## How to Use This Repository
+
+The recommended approach is to follow the nine phases in numerical order.
+
+1. Start with the [Documentation Guide](docs/README.md).
+2. Follow each phase sequentially.
+3. Read the objectives and explanations before executing commands.
+4. Pay attention to configuration files and command outputs.
+5. Perform the documented verification steps before moving to the next phase.
+6. Adapt environment-specific values, such as IP addresses, paths, and ports, to your own setup.
+
+The documentation can also be used as a reference for individual topics such as SSH hardening, LVM, Docker networking, Nginx reverse proxy, and Prometheus monitoring.
+
+**Important:** The documents describe the actual implementation of this lab. Some commands and configuration values are specific to the original environment and may require adaptation.
+
+## Security and Production Considerations
+
+This repository represents a learning and testing environment. It is not intended to be deployed directly as a production infrastructure.
+
+The project introduces several important security practices, including:
+
+- SSH key-based authentication.
+- Firewall configuration.
+- Fail2ban and AppArmor.
+- Restricted access to application containers.
+- Local access to the Grafana interface through SSH tunneling.
+
+However, additional measures would be required before using a similar environment in production:
+
+- Proper DNS and HTTPS configuration.
+- Secure secrets and credential management.
+- Regular backup and recovery procedures.
+- Further container security hardening.
+- External monitoring notification channels.
+- Detailed network and firewall access reviews.
+- Application-level security controls.
+- High availability and disaster recovery planning.
+
+Known limitations and possible improvements are documented in the relevant phase documents.
+
+## Project Status
+
+The nine phases have been implemented and documented.
+
+The core infrastructure is deployed, and its main components have been tested, including remote server access, Docker-based application hosting, monitoring data collection, Grafana visualization, and alert validation.
+
+Some improvements remain possible, particularly Docker dashboard compatibility, external alert notifications, and additional container security hardening.
+
+The repository represents a completed practical learning lab that can be extended through future infrastructure and DevOps projects.
+
+## Author
+
+A practical infrastructure project developed to strengthen hands-on skills in Linux system administration, networking, security, Docker, application hosting, and monitoring.
